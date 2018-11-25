@@ -28,21 +28,26 @@ int A=000;
 int main(void)
 {
 	uint8_t i, j;
-	uint8_t n[4][8];
-	uint8_t str[5]="hola";
+	uint8_t r[4][8];
+	uint8_t str[5]="boca";
 
 	Inicializar();
 
 	InitMatrix();
 
-	for(i=0;i<8;i++)
+	for(j=0;j<4;j++)
 	{
-		for(j=0;j<4;j++)
+		stringConverter(j, str[j], r);
+
+		for(i=0;i<8;i++)
 		{
-			stringConverter(j, str[j], n);
-			sendCmd( (DIGIT+i) , n[j][i] );
+			if( (j==1) ) { sendNOOP(j); }
+			if( (j==2) ) { sendNOOP(j); }
+			if( (j==3) ) { sendNOOP(j); }
+			sendCmd( (DIGIT+i) , r[j][i] );
 		}
 	}
+
 
     while(1)
     {
@@ -56,9 +61,19 @@ void Delay(uint8_t time)
 	for(uint8_t j = 0; j < time; j++);
 }
 
+void sendNOOP(uint8_t j)
+{
+	do
+	{
+		SetPIN(PCS,AP);
+		sendCmd(NOOP ,NOOP );
+		j--;
+	}while(j!=0);
+}
+
 void InitMatrix(void)
 {
-	uint32_t j;
+	uint8_t i, j;
 
 	SetPINSEL(PDIN,0x00);
 	SetPINSEL(PCLK,0x00);
@@ -74,6 +89,7 @@ void InitMatrix(void)
 	for(j=0;j<4;j++) { sendCmd(INTEN,MINTEN); }
 	for(j=0;j<4;j++) { sendCmd(DEMODE,NODECO); }
 	for(j=0;j<4;j++) { sendCmd(DSPTEST,NOROP); }
+	for(i=0;i<8;i++) { sendCmd( (DIGIT+i) , (0x00) ); }
 }
 
 void stringConverter(uint8_t j, uint8_t l, uint8_t msg[][8])
